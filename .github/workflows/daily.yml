@@ -1,0 +1,60 @@
+name: Daily threat pack
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: threat-pack
+  cancel-in-progress: false
+
+env:
+  # Fingerprint of the OFFLINE update key that signed delegation.json. Public information.
+  UPDATE_KEY_FINGERPRINT: "bb032af71942ec61c7e538bd15177ed3"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Research new indicators
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pip install --quiet anthropic
+          python research/research.py research/proposal.json
+
+      - name: Merge under the guardrails, sign, verify
+        env:
+          PACK_KEY_JSON: ${{ secrets.PACK_KEY_JSON }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$PACK_KEY_JSON" > "$RUNNER_TEMP/pack-key.json"
+          dotnet tool/PackTool.dll --merge-pack --prev threat-pack.json --proposal research/proposal.json \
+            --pack-key "$RUNNER_TEMP/pack-key.json" --delegation delegation.json --out threat-pack.new.json | tee research/last-run.txt
+          rm -f "$RUNNER_TEMP/pack-key.json"
+          dotnet tool/PackTool.dll --verify-pack threat-pack.new.json --fingerprint "$UPDATE_KEY_FINGERPRINT"
+          mv threat-pack.new.json threat-pack.json
+
+      - name: Publish
+        run: |
+          git config user.name "citadel-threat-pack"
+          git config user.email "citadel-threat-pack@users.noreply.github.com"
+          git add threat-pack.json research/last-run.txt
+          git commit -m "Threat pack $(date -u +%Y-%m-%d)" || exit 0
+          git push

@@ -58,6 +58,9 @@ def main():
         m = re.search(r"\{.*\}", text, re.S)
         data = json.loads(m.group(0)) if m else EMPTY
         clean = {k: [x for x in data.get(k, []) if isinstance(x, (str, dict))] for k in EMPTY}
+        for r in clean["commandRules"]:                       # the model sometimes forgets the required prefix
+            if isinstance(r, dict) and isinstance(r.get("id"), str) and not r["id"].startswith("pack-"):
+                r["id"] = "pack-" + r["id"]
         save(clean)
         print("Research proposal:", {k: len(v) for k, v in clean.items()})
     except Exception as ex:                                  # never fail the pipeline: an empty proposal still refreshes the pack

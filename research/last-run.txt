@@ -1,0 +1,11 @@
+Pack serial 3: 18 brand(s), 4 domain(s), 1 address(es), 0 rule(s); expires 2026-12-05.
+  added   brand amazon.com
+  added   brand zillow.com
+  added   brand claude.ai
+  added   brand cloudflare.com
+  added   domain gta6cloud.nexus
+  added   domain velmontriq.net
+  added   domain nimbuskeep.com
+  added   domain veriffication-redirect.com
+  added   address 192.30.240.26/32
+  refused rule clickfix-finger-pipe: bad id

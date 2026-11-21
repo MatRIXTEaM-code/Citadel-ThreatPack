@@ -8,7 +8,7 @@ It never blocks, deletes or runs anything on a PC. It expires after 14 days, so 
 
 ## How it stays fresh (no human step)
 
-`.github/workflows/daily.yml` runs every day:
+`.github/workflows/daily.yml` runs every Monday (05:17 UTC):
 1. `research/research.py` asks Claude (with web search) for new indicators from public reports in the last 7 days.
 2. `tool/PackTool.dll --merge-pack` checks every entry on its own: well-known sites can never be flagged, private and reserved
    addresses and ranges wider than /24 are refused, command rules that match an everyday command are refused, additions per run are capped,

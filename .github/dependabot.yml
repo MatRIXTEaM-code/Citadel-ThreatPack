@@ -1,0 +1,8 @@
+# Weekly checks for newer versions of the GitHub Actions this repository uses.
+# Dependabot opens a pull request; nothing changes until it is merged.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
